@@ -13,6 +13,8 @@ def format_with_hira(k):
 
 import json
 import os
+from streamlit_local_storage import LocalStorage
+localS = LocalStorage()
 
 USER_DATA_FILE = "user_data.json"
 
@@ -24,15 +26,9 @@ SESSION_KEYS = [
     "atk_tera", "def_tera", "atk_gimmick", "def_gimmick"
 ]
 
-def load_user_data():
-    if os.path.exists(USER_DATA_FILE):
-        with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"history": [], "presets": []}
+def save_presets(data):
+    localS.setItem("pc_presets", json.dumps({"presets": data}, ensure_ascii=False))
 
-def save_user_data(data):
-    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_state(new_state):
     for k, v in new_state.items():
@@ -64,9 +60,13 @@ def swap_roles():
     if "def_tera" in st.session_state: st.session_state["def_tera_sel"] = st.session_state["def_tera"]
     if "def_nature" in st.session_state: st.session_state["def_nat"] = st.session_state["def_nature"]
 
-user_data = load_user_data()
-if "history" not in st.session_state: st.session_state.history = user_data.get("history", [])
-if "presets" not in st.session_state: st.session_state.presets = user_data.get("presets", [])
+ls_item = localS.getItem("pc_presets", key="ls_init")
+if "presets" not in st.session_state:
+    if ls_item:
+        try: st.session_state.presets = json.loads(ls_item).get("presets", [])
+        except: st.session_state.presets = []
+    else:
+        st.session_state.presets = []
 
 # 状態の初期化
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
@@ -322,7 +322,7 @@ with st.sidebar:
         preset_name = f"{st.session_state.atk_name} vs {st.session_state.def_name}"
         current_state = {k: st.session_state.get(k) for k in SESSION_KEYS}
         st.session_state.presets.append({"name": preset_name, "state": current_state})
-        save_user_data({"history": st.session_state.history, "presets": st.session_state.presets})
+        save_presets(st.session_state.presets)
         
     if st.session_state.presets:
         for i, preset in enumerate(st.session_state.presets):
