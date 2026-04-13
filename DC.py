@@ -70,6 +70,16 @@ if "presets" not in st.session_state:
 
 # 状態の初期化
 ls_def = localS.getItem("pc_default")
+ls_cfg = localS.getItem("pc_app_config")
+
+if "app_config" not in st.session_state:
+    st.session_state.app_config = {"clear_chat": True}
+    if ls_cfg:
+        try:
+            import json
+            st.session_state.app_config.update(json.loads(ls_cfg))
+        except: pass
+
 if "app_init" not in st.session_state:
     if ls_def:
         try: load_state(json.loads(ls_def))
@@ -167,7 +177,7 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<hr style='margin: 5px 0; border: none; border-top: 1px solid #ddd;'>", unsafe_allow_html=True)
-    with st.form("chat_form", clear_on_submit=True):
+    with st.form("chat_form", clear_on_submit=st.session_state.app_config["clear_chat"]):
         chat_input = st.text_area("文章でスピード入力\n（例: カイリューのげきりんをパオジアンに）", height=100)
         submitted = st.form_submit_button("設定を反映", use_container_width=True)
         
@@ -339,7 +349,32 @@ with st.sidebar:
 
     st.markdown("<hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>", unsafe_allow_html=True)
     with st.popover(":material/settings: アプリ設定", use_container_width=True):
-        st.markdown("**起動時のデフォルト構成**")
+        st.markdown("**🎨 テーマ変更について**")
+        st.caption("画面右上の「⋮」メニュー ＞ Settings ＞ Theme から自由に変更可能です！")
+        
+        st.markdown("<hr style='margin: 12px 0; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
+        
+        st.markdown("**🗑️ データの初期化 (キャッシュクリア)**")
+        st.caption("保存した「お気に入り構成」「デフォルト設定」など全てを削除してスッキリさせます。")
+        if st.button("すべてのデータを完全削除", use_container_width=True):
+            localS.setItem("pc_default", "")
+            localS.setItem("pc_presets", "")
+            localS.setItem("pc_app_config", "")
+            st.session_state.presets = []
+            st.success("全て削除しました！再読み込みで適用されます。")
+            
+        st.markdown("<hr style='margin: 12px 0; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
+        
+        st.markdown("**💬 チャットの挙動**")
+        st.caption("スピード入力の送信後に、書いた文章を自動で消去するかそのまま残しておくかを選べます。")
+        def update_chat_config():
+            st.session_state.app_config["clear_chat"] = st.session_state.temp_clear_chat
+            localS.setItem("pc_app_config", json.dumps(st.session_state.app_config, ensure_ascii=False))
+        st.toggle("送信後に文章を自動消去する", value=st.session_state.app_config["clear_chat"], key="temp_clear_chat", on_change=update_chat_config)
+            
+        st.markdown("<hr style='margin: 12px 0; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
+
+        st.markdown("**🚀 起動時のデフォルト構成**")
         st.caption("現在の画面のすべて（ポケモン・努力値・持ち物など）をスマホ/PCに記録し、次回起動時の初期状態にします。")
         if st.button(":material/save: 現在の構成をデフォルトにする", use_container_width=True):
             current_state = {k: st.session_state.get(k) for k in SESSION_KEYS}
