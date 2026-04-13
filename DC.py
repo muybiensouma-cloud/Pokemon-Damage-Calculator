@@ -69,6 +69,13 @@ if "presets" not in st.session_state:
         st.session_state.presets = []
 
 # 状態の初期化
+ls_def = localS.getItem("pc_default")
+if "app_init" not in st.session_state:
+    if ls_def:
+        try: load_state(json.loads(ls_def))
+        except: pass
+    st.session_state.app_init = True
+    
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 if "atk_name" not in st.session_state: st.session_state.atk_name = "コライドン"
 if "def_name" not in st.session_state: st.session_state.def_name = "ディンルー"
@@ -156,7 +163,7 @@ with st.sidebar:
     st.markdown("""
         <div style='text-align: left; margin-bottom: 20px;'>
             <img src='https://www.pokemonchampions.jp/assets/img/common/logo@1x.webp' style='height: 55px; margin-bottom: 10px; object-fit: contain; display: block;'>
-            <h2 style='margin: 0; font-size: 1.2rem; line-height: 1.3; color: #2C3E50;'>PokemonChampions<br>ダメージ計算ツール</h2>
+            <h2 style='margin: 0; font-size: 1.2rem; line-height: 1.3;'>PokemonChampions<br>ダメージ計算ツール</h2>
         </div>
     """, unsafe_allow_html=True)
     st.markdown("<hr style='margin: 5px 0; border: none; border-top: 1px solid #ddd;'>", unsafe_allow_html=True)
@@ -317,7 +324,7 @@ with st.sidebar:
 
 
         
-    st.markdown("<hr style='margin: 10px 0; border: none; border-top: 1px solid #ddd;'><h4 style='margin-bottom: 8px; font-size: 1rem; color: #444;'>お気に入り構成</h4>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 10px 0; border: none; border-top: 1px solid #ddd;'><h4 style='margin-bottom: 8px; font-size: 1rem;'>お気に入り構成</h4>", unsafe_allow_html=True)
     if st.button(":material/bookmark: 現在の構成を保存", use_container_width=True):
         preset_name = f"{st.session_state.atk_name} vs {st.session_state.def_name}"
         current_state = {k: st.session_state.get(k) for k in SESSION_KEYS}
@@ -329,6 +336,18 @@ with st.sidebar:
             if st.button(preset["name"], key=f"preset_{i}", use_container_width=True):
                 load_state(preset["state"])
                 st.rerun()
+
+    st.markdown("<hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>", unsafe_allow_html=True)
+    with st.popover(":material/settings: アプリ設定", use_container_width=True):
+        st.markdown("**起動時のデフォルト構成**")
+        st.caption("現在の画面のすべて（ポケモン・努力値・持ち物など）をスマホ/PCに記録し、次回起動時の初期状態にします。")
+        if st.button(":material/save: 現在の構成をデフォルトにする", use_container_width=True):
+            current_state = {k: st.session_state.get(k) for k in SESSION_KEYS}
+            localS.setItem("pc_default", json.dumps(current_state, ensure_ascii=False))
+            st.success("記憶しました！次回起動時から適用されます。")
+        if st.button(":material/delete: デフォルト設定をリセット", use_container_width=True):
+            localS.setItem("pc_default", "")
+            st.success("初期化しました！")
     # 環境ギミック選択はメイン側に移動
 
 
@@ -352,9 +371,9 @@ def render_pokemon_card(poke_name, is_atk=True):
     <div style="display: flex; align-items: center; border-radius: 8px; margin-bottom: 15px;">
         <img src="{img_url}" style="height: 90px; width: 90px; object-fit: contain; margin-right: 15px;">
         <div>
-            <div style="font-size: 1.3em; font-weight: 900; margin-bottom: 4px; color: #333;">{poke_name}</div>
+            <div style="font-size: 1.3em; font-weight: 900; margin-bottom: 4px;">{poke_name}</div>
             <div style="margin-bottom: 4px;">{type_badges}</div>
-            <div style="font-size: 0.85em; color: #777; font-weight: bold;">{stats_str}</div>
+            <div style="font-size: 0.85em; font-weight: bold; opacity: 0.8;">{stats_str}</div>
         </div>
     </div>
     ''', unsafe_allow_html=True)
