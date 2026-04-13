@@ -383,10 +383,6 @@ with st.sidebar:
         if st.button(":material/delete: デフォルト設定をリセット", use_container_width=True):
             localS.setItem("pc_default", "")
             st.success("初期化しました！")
-            
-        st.markdown("<hr style='margin: 12px 0; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
-        if st.button("閉じる", use_container_width=True):
-            st.rerun()
     # 環境ギミック選択はメイン側に移動
 
 
