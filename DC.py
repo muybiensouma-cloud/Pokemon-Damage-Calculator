@@ -60,7 +60,7 @@ def swap_roles():
     if "def_tera" in st.session_state: st.session_state["def_tera_sel"] = st.session_state["def_tera"]
     if "def_nature" in st.session_state: st.session_state["def_nat"] = st.session_state["def_nature"]
 
-ls_item = localS.getItem("pc_presets", key="ls_init")
+ls_item = localS.getItem("pc_presets")
 if "presets" not in st.session_state:
     if ls_item:
         try: st.session_state.presets = json.loads(ls_item).get("presets", [])
