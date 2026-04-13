@@ -386,7 +386,7 @@ with st.sidebar:
             
         st.markdown("<hr style='margin: 12px 0; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
         if st.button("閉じる", use_container_width=True):
-            pass
+            st.rerun()
     # 環境ギミック選択はメイン側に移動
 
 
